@@ -94,7 +94,7 @@ class HBNBCommand(cmd.Cmd):
 
     def do_quit(self, command):
         """ Method to exit the HBNB console"""
-        exit()
+        return True
 
     def help_quit(self):
         """ Prints the help documentation for quit  """
@@ -103,7 +103,7 @@ class HBNBCommand(cmd.Cmd):
     def do_EOF(self, arg):
         """ Handles EOF to exit program """
         print()
-        exit()
+        return True
 
     def help_EOF(self):
         """ Prints the help documentation for EOF """
@@ -125,7 +125,11 @@ class HBNBCommand(cmd.Cmd):
             return
         new_instance = HBNBCommand.classes[args[0]]()
         for arg in args[1:]:
-            k, v = arg.split('=')
+            vals = arg.split('=')
+            print(vals)
+            if (len(vals) != 2):
+                continue
+            k, v = vals
             if (fullmatch(r'\d+', v)):
                 v = int(v)
             elif (fullmatch(r'(\d+\.\d*|\.\d+)', v)):
@@ -300,7 +304,17 @@ class HBNBCommand(cmd.Cmd):
 
             # if att_val was not quoted arg
             if not att_val and args[2]:
-                att_val = args[2].partition(' ')[0]
+                # Try float
+                if ('.' in args[2]):
+                    try:
+                        att_val = float(args[2].partition(' ')[0])
+                    except Exception:
+                        pass
+                # Try int
+                try:
+                    att_val = int(args[2].partition(' ')[0])
+                except Exception:
+                    pass
 
             args = [att_name, att_val]
 
