@@ -74,13 +74,15 @@ class TestConsole(TestCase):
         """
         Test for quit command
         """
-        self.assertTrue(self._run("quit"))
+        with self.assertRaises(SystemExit):
+            self._run("quit")
 
     def test_eof(self):
         """
         Test for EOF command
         """
-        self.assertTrue(self._run("EOF"))
+        with self.assertRaises(SystemExit):
+            self._run("EOF")
 
     def test_emptyline(self):
         """

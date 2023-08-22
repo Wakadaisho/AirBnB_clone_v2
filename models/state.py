@@ -18,9 +18,9 @@ class State(BaseModel, Base):
         return [city for city in storage.all("City")
                 if city.state_id == self.id]
 
-    if getenv("HBNB_ENV") == 'db':
+    if getenv("HBNB_TYPE_STORAGE") == 'db':
         name = Column(String(128), nullable=False)
         cities = relationship("City",
                               backref="state",
-                              cascade="all, delete-orphan",
+                              cascade="all, delete, delete-orphan",
                               lazy="dynamic")

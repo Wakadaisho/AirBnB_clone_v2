@@ -2,10 +2,12 @@
 """This module defines a base class for all models in our hbnb clone"""
 import uuid
 from datetime import datetime
+from os import getenv
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, DateTime
 
 Base = declarative_base()
+fmt = "%Y-%m-%dT%H:%M:%S.%f"
 
 
 class BaseModel:
@@ -23,11 +25,21 @@ class BaseModel:
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
         else:
-            kwargs['updated_at'] = datetime.strptime(kwargs['updated_at'],
-                                                     '%Y-%m-%dT%H:%M:%S.%f')
-            kwargs['created_at'] = datetime.strptime(kwargs['created_at'],
-                                                     '%Y-%m-%dT%H:%M:%S.%f')
-            del kwargs['__class__']
+            for key, value in kwargs.items():
+                if key in ["created_at", "updated_at"]:
+                    try:
+                        kwargs[key] = datetime.strptime(value, fmt)
+                    except Exception:
+                        pass
+                kwargs[key] = value
+            if not hasattr(kwargs, "updated_at"):
+                kwargs['created_at'] = datetime.now()
+            if not hasattr(kwargs, "created_at"):
+                kwargs['updated_at'] = datetime.now()
+            if not hasattr(kwargs, "id"):
+                kwargs['id'] = str(uuid.uuid4())
+            if hasattr(kwargs, "__class__"):
+                del kwargs['__class__']
             self.__dict__.update(kwargs)
 
     def __str__(self):
