@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-""" Amenity Module for HBNB project """
+"""The Amenity Module for HBNB project """
 from os import getenv
 from models.base_model import BaseModel, Base
 from models.place import place_amenity
