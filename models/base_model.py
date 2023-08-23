@@ -38,8 +38,8 @@ class BaseModel:
                 kwargs['updated_at'] = datetime.now()
             if not hasattr(kwargs, "id"):
                 kwargs['id'] = str(uuid.uuid4())
-            if hasattr(kwargs, "__class__"):
-                del kwargs['__class__']
+            if kwargs.get("__class__"):
+                kwargs.pop('__class__', None)
             self.__dict__.update(kwargs)
 
     def __str__(self):
