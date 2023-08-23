@@ -37,7 +37,7 @@ class DBStorage:
                 'State': State, 'City': City, 'Amenity': Amenity,
                 'Review': Review
                 }
-        if (cls):
+        if cls:
             for row in self.__session.query(classes[cls]).all():
                 f.update({f"{row.to_dict()['__class__']}.{row.id}": row})
         else:

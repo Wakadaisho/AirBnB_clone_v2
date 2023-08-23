@@ -48,8 +48,14 @@ class FileStorage:
                     'Review': Review
                   }
         try:
-            with open(FileStorage.__file_path, 'r') as f:
-                temp = json.load(f)
+            with open(FileStorage.__file_path, 'r', encoding='utf-8') as f:
+                file_content = f.read()
+
+                #handling empty json file
+                if not file_content:
+                    return
+
+                temp = json.loads(file_content)
                 for key, val in temp.items():
                     class_name = val.get('__class__')
                     if class_name in classes:
@@ -59,7 +65,8 @@ class FileStorage:
                         FileStorage.__objects[obj_key] = obj
         except FileNotFoundError:
             pass
-
+        except json.JSONDecodeError as e:
+            print("Error decoding json",e)
     def delete(self, obj=None):
         """Delete an object from __objects"""
         if obj:
