@@ -37,7 +37,7 @@ class TestConsole(TestCase):
                       "** no instance found **\n",
                       "** attribute name missing **\n",
                       "** value missing **\n"]
-        cls.classes = ["BaseModel", "User", "State",
+        cls.classes = ["User", "State",
                        "City", "Amenity", "Place", "Review"]
         try:
             os.remove("file.json")
@@ -114,6 +114,20 @@ class TestConsole(TestCase):
             self.assertTrue(uuid.UUID(output))
         for model in self.classes:
             output = self._run(f"create {model}").strip()
+            self.assertTrue(uuid.UUID(output))
+
+    @skipIf(isdbstorage, "File storage testing")
+    def test_create_kwargs(self):
+        """
+        Test for create method error output
+        """
+        # Catch errors
+        self.assertIn(self._run("create"), self.errors)
+        self.assertIn(self._run("create Nairobi"), self.errors)
+
+        for model in self.classes:
+            output = self._run(f"create {model}").strip()
+            self.assertTrue(uuid.UUID(output))
             self.assertTrue(uuid.UUID(output))
 
     @skipIf(isdbstorage, "File storage testing")

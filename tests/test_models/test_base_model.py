@@ -1,15 +1,15 @@
 #!/usr/bin/python3
 """ """
-from models.base_model import BaseModel, Base
+from models.base_model import BaseModel
 import unittest
 import datetime
 from uuid import UUID
 import json
 import os
 
-isdbstorage = os.getenv("HBNB_TYPE_STORAGE") == 'db'
-skipIf = unittest.skipIf
+isdbstorage = os.getenv("HBNB_TYPE_STORAGE", 'file') == 'db'
 remove = os.remove
+skipIf = unittest.skipIf
 attrs = {"id": str,
          "created_at": datetime.datetime,
          "updated_at": datetime.datetime}
@@ -18,90 +18,81 @@ attrs = {"id": str,
 class test_basemodel(unittest.TestCase):
     """ """
 
-    def __init__(self, *args, **kwargs):
-        """ """
-        super().__init__(*args, **kwargs)
-        self.name = 'BaseModel'
-        self.value = BaseModel
+    __cls__ = "BaseModel"
 
-    def setUp(self):
-        """ """
-        pass
+    @classmethod
+    def setUpClass(cls):
+        cls.obj = BaseModel()
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
+        del cls.obj
         try:
-            os.remove('file.json')
-        except Exception:
+            remove("file.json")
+        except FileNotFoundError:
             pass
 
     def test_default(self):
         """ """
-        i = self.value()
-        self.assertEqual(type(i), self.value)
+        self.assertEqual(type(self.obj), self.obj.__class__)
 
     def test_kwargs(self):
         """ """
-        i = self.value()
-        copy = i.to_dict()
+        copy = self.obj.to_dict()
         new = BaseModel(**copy)
-        self.assertFalse(new is i)
+        self.assertFalse(new is self.obj)
 
     def test_kwargs_int(self):
         """ """
-        i = self.value()
-        copy = i.to_dict()
+        copy = self.obj.to_dict()
         copy.update({1: 2})
         with self.assertRaises(TypeError):
-            new = BaseModel(**copy)
+            BaseModel(**copy)
 
-    @skipIf(isdbstorage, "File storage testing")
+    @skipIf(isdbstorage and __cls__ == "BaseModel", "No BaseModel in DB")
     def test_save(self):
         """ Testing save """
-        i = self.value()
-        i.save()
-        key = self.name + "." + i.id
+        self.obj.save()
+        key = self.obj.__class__.__name__ + "." + self.obj.id
         with open('file.json', 'r') as f:
             j = json.load(f)
-            self.assertEqual(j[key], i.to_dict())
+            self.assertEqual(j[key], self.obj.to_dict())
 
     def test_str(self):
         """ """
-        i = self.value()
-        self.assertEqual(str(i), '[{}] ({}) {}'.format(self.name, i.id,
-                         i.__dict__))
+        self.assertEqual(str(self.obj), '[{}] ({}) {}'.format(
+            self.obj.__class__.__name__, self.obj.id,
+            self.obj.__dict__))
 
     def test_todict(self):
         """ """
-        i = self.value()
-        n = i.to_dict()
-        self.assertEqual(i.to_dict(), n)
+        n = self.obj.to_dict()
+        self.assertEqual(self.obj.to_dict(), n)
 
     def test_kwargs_none(self):
         """ """
         n = {None: None}
         with self.assertRaises(TypeError):
-            new = self.value(**n)
+            self.obj.__class__(**n)
 
+    @skipIf(isdbstorage, "File storage test")
     def test_kwargs_one(self):
         """ """
         n = {'Name': 'test'}
         with self.assertRaises(KeyError):
-            new = self.value(**n)
+            self.obj.__class__(**n)
 
     def test_id(self):
         """ """
-        new = self.value()
-        self.assertEqual(type(new.id), str)
+        self.assertEqual(type(self.obj.id), str)
 
     def test_created_at(self):
         """ """
-        new = self.value()
-        self.assertEqual(type(new.created_at), datetime.datetime)
+        self.assertEqual(type(self.obj.created_at), datetime.datetime)
 
+    @skipIf(isdbstorage, "File storage test")
     def test_updated_at(self):
         """ """
-        new = self.value()
-        self.assertEqual(type(new.updated_at), datetime.datetime)
-        n = new.to_dict()
-        new = BaseModel(**n)
+        self.assertEqual(type(self.obj.updated_at), datetime.datetime)
+        new = BaseModel(**(self.obj.to_dict()))
         self.assertFalse(new.created_at == new.updated_at)

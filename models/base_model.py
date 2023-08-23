@@ -8,6 +8,7 @@ from sqlalchemy import Column, String, DateTime
 
 Base = declarative_base()
 fmt = "%Y-%m-%dT%H:%M:%S.%f"
+isfilestorage = getenv("HBNB_TYPE_STORAGE", "file") == "file"
 
 
 class BaseModel:
@@ -25,21 +26,23 @@ class BaseModel:
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
         else:
-            for key, value in kwargs.items():
-                if key in ["created_at", "updated_at"]:
-                    try:
-                        kwargs[key] = datetime.strptime(value, fmt)
-                    except Exception:
-                        pass
-                kwargs[key] = value
+            if isfilestorage or hasattr(kwargs, "updated_at"):
+                kwargs['updated_at'] = datetime.strptime(
+                                            kwargs['updated_at'],
+                                            '%Y-%m-%dT%H:%M:%S.%f')
+            if isfilestorage or hasattr(kwargs, "created_at"):
+                kwargs['created_at'] = datetime.strptime(
+                                            kwargs['created_at'],
+                                            '%Y-%m-%dT%H:%M:%S.%f')
+            if "__class__" in kwargs:
+                del kwargs['__class__']
+            self.__dict__.update(kwargs)
             if not hasattr(kwargs, "updated_at"):
                 kwargs['created_at'] = datetime.now()
             if not hasattr(kwargs, "created_at"):
                 kwargs['updated_at'] = datetime.now()
             if not hasattr(kwargs, "id"):
                 kwargs['id'] = str(uuid.uuid4())
-            if kwargs.get("__class__"):
-                kwargs.pop('__class__', None)
             self.__dict__.update(kwargs)
 
     def __str__(self):

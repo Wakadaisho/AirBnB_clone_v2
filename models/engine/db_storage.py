@@ -23,7 +23,8 @@ class DBStorage:
                                               getenv('HBNB_MYSQL_HOST'),
                                               getenv('HBNB_MYSQL_DB')),
                                       pool_pre_ping=True)
-        if getenv('HBNB_ENV') == 'test':
+        if (getenv('HBNB_ENV') == 'test' and
+                getenv('HBNB_TYPE_STORAGE', 'file') == 'db'):
             # Drop all tables
             Base.metadata.drop_all(self.__engine)
 
@@ -32,10 +33,10 @@ class DBStorage:
         f = {}
 
         classes = {
-                    'User': User, 'Place': Place,
-                    'State': State, 'City': City, 'Amenity': Amenity,
-                    'Review': Review
-                  }
+                'User': User, 'Place': Place,
+                'State': State, 'City': City, 'Amenity': Amenity,
+                'Review': Review
+                }
         if (cls):
             for row in self.__session.query(classes[cls]).all():
                 f.update({f"{row.to_dict()['__class__']}.{row.id}": row})
@@ -54,7 +55,7 @@ class DBStorage:
         self.__session.commit()
 
     def reload(self):
-        """Loads storage dictionary from DB __engine"""
+        """Loads storage data from DB __engine"""
         Base.metadata.create_all(self.__engine)
         self.__session = orm.scoped_session(
                 orm.sessionmaker(bind=self.__engine,
@@ -63,4 +64,4 @@ class DBStorage:
     def delete(self, obj=None):
         """Delete an object from __session"""
         if obj:
-            self.__session.query(obj).delete()
+            self.__session.delete(obj)
