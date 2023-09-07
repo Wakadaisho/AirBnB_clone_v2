@@ -1,5 +1,7 @@
 .venv/
 __pycache__/
+versions/
+setup.py
 test_params_create
 main_delete.py
 file.json
