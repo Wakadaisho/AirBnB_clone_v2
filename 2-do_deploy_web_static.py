@@ -12,23 +12,6 @@ env.hosts = [
 env.user = 'ubuntu'
 
 
-def do_pack():
-    """Pack web_static folder"""
-    if not os.path.isdir("versions"):
-        os.makedirs("versions")
-
-    version = datetime.strftime(datetime.now(), "%Y%m%d%H%M%S")
-    filename = f"versions/web_static_{version}.tgz"
-
-    print("Packing web_static to", filename)
-    local(f"tar -cvzf {filename} web_static")
-    if os.path.isfile(filename):
-        size = os.path.getsize(filename)
-        print(f"web_static packed: {filename} -> {size}Bytes")
-        return filename
-    return False
-
-
 def do_deploy(archive_path):
     """Copy web files over to remote servers
 
@@ -44,18 +27,24 @@ def do_deploy(archive_path):
     archive = archive_path.split("/")[-1]
     basename = archive.partition(".")[0]
 
+    def executeBoth(cmd):
+        run(cmd)
+        local(cmd)
+
     try:
         put(archive_path, f"/tmp/{archive}")
-        run(f"mkdir -p /data/web_static/releases/{basename}/")
-        run(f"tar -xzf /tmp/{archive} "
-            f"-C /data/web_static/releases/{basename}/")
-        run(f"rm /tmp/{archive}")
-        run(f"cp -r "
-            f"/data/web_static/releases/{basename}/web_static/* "
-            f"/data/web_static/releases/{basename}/")
-        run(f"rm -rf /data/web_static/releases/{basename}/web_static")
-        run(f"ln -sf /data/web_static/releases/{basename} "
-            f"/data/web_static/current")
+        local(f"cp {archive_path} /tmp/")
+        executeBoth(f"mkdir -p /data/web_static/releases/{basename}/")
+        executeBoth(f"tar -xzf /tmp/{archive} "
+                    f"-C /data/web_static/releases/{basename}/")
+        executeBoth(f"rm /tmp/{archive}")
+        executeBoth(f"cp -r "
+                    f"/data/web_static/releases/{basename}/web_static/* "
+                    f"/data/web_static/releases/{basename}/")
+        executeBoth(f"rm -rf /data/web_static/releases/{basename}/web_static")
+        executeBoth(f"rm -rf /data/web_static/current")
+        executeBoth(f"ln -sf /data/web_static/releases/{basename}/ "
+                    f"/data/web_static/current")
         print("New version deployed!")
     except Exception:
         return False
