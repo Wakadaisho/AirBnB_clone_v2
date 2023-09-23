@@ -13,7 +13,7 @@ place_amenity = Table('place_amenity', Base.metadata,
 
 
 class Place(BaseModel, Base):
-    """Defines Class  place  """
+    """Defines Class  place"""
     __tablename__ = "places"
     city_id = ""
     user_id = ""
@@ -31,7 +31,8 @@ class Place(BaseModel, Base):
     def reviews(self):
         """The reviews getter."""
         from models import storage
-        return [review for review in storage.all("Review")
+        from models.review import Review
+        return [review for review in storage.all(Review)
                 if review.place_id == self.id]
 
     @property
@@ -42,7 +43,8 @@ class Place(BaseModel, Base):
     @amenities.setter
     def amenities(self, value=None):
         """ The Amenity setter  appends ids to the attributes"""
-        if type(value) is Amenity and value.id not in self.amenity_ids:
+        from models.amenity import Amenity
+        if value.__name__ == Amenity and value.id not in self.amenity_ids:
             self.amenity_ids.append(value.id)
 
     if getenv("HBNB_TYPE_STORAGE") == 'db':

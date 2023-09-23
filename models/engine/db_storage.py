@@ -24,7 +24,7 @@ class DBStorage:
                                               getenv('HBNB_MYSQL_DB')),
                                       pool_pre_ping=True)
         if (getenv('HBNB_ENV') == 'test' and
-                getenv('HBNB_TYPE_STORAGE', 'file') == 'db'):
+                getenv('HBNB_TYPE_STORAGE', 'fs') == 'db'):
             # Drop all tables
             Base.metadata.drop_all(self.__engine)
 
@@ -38,7 +38,7 @@ class DBStorage:
                 'Review': Review
                 }
         if cls:
-            for row in self.__session.query(classes[cls]).all():
+            for row in self.__session.query(classes[cls.__name__]).all():
                 f.update({f"{row.to_dict()['__class__']}.{row.id}": row})
         else:
             for cls in classes.values():
@@ -65,3 +65,7 @@ class DBStorage:
         """Delete an object from __session"""
         if obj:
             self.__session.delete(obj)
+
+    def close(self):
+        """Close session"""
+        self.__session.close()

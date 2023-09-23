@@ -6,3 +6,5 @@ test_params_create
 main_delete.py
 file.json
 main_place_amenities.py
+main.py
+7-states_list.sql

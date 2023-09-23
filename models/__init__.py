@@ -12,7 +12,7 @@ from os import getenv
 
 storage = None
 
-if getenv('HBNB_TYPE_STORAGE', 'file') == 'db':
+if getenv('HBNB_TYPE_STORAGE', 'fs') == 'db':
     storage = DBStorage()
 else:
     storage = FileStorage()
